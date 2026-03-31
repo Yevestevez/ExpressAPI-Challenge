@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import debug from 'debug';
 
-import type { Potato, PotatoDTO } from '../schemas/potato.ts';
+import type { Potato, PotatoDTO, PotatoUpdateDTO } from '../schemas/potato.ts';
 import type { Repository } from '../types/repo.ts';
 import { configDB } from '../config/db-config.ts';
 
@@ -49,6 +49,13 @@ export class PotatoesRepoJSON implements Repository<Potato> {
         await this.load();
         const potato: Potato = { ...potatoData, id: crypto.randomUUID() };
         this.#potatoes.push(potato);
+        await this.save();
+        return potato;
+    }
+
+    async updateById(id: string, data: PotatoUpdateDTO): Promise<Potato> {
+        const potato = await this.readById(id);
+        Object.assign(potato, data);
         await this.save();
         return potato;
     }

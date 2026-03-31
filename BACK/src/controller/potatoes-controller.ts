@@ -3,7 +3,7 @@ import debug from 'debug';
 
 import type { PotatoesRepoJSON } from '../services/potatoes-repo-json.ts';
 import { HttpError } from '../errors/http-error.ts';
-import { PotatoSchemaDTO } from '../schemas/potato.ts';
+import { PotatoSchemaDTO, type PotatoUpdateDTO } from '../schemas/potato.ts';
 
 const log = debug('patatas:controller:potatoes');
 
@@ -47,6 +47,27 @@ export class PotatoesController {
             res.json(result);
         } catch (error) {
             next(error);
+        }
+    };
+
+    updateById = async (req: Request, res: Response, next: NextFunction) => {
+        const { id } = req.params;
+        const data = PotatoSchemaDTO.partial().parse(
+            req.body,
+        ) as PotatoUpdateDTO;
+
+        try {
+            const result = await this.repo.updateById(id as string, data);
+            res.json(result);
+            return;
+        } catch (error) {
+            const finalError = new HttpError(
+                404,
+                'NotFound',
+                (error as Error).message,
+            );
+            finalError.cause = error;
+            next(finalError);
         }
     };
 }

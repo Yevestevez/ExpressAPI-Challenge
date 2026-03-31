@@ -12,6 +12,7 @@ const router = (controller: PotatoesController) => {
     router.get('/', controller.getAll);
     router.get('/:id', controller.getById);
     router.post('/', controller.create);
+    router.patch('/:id', controller.updateById);
 
     return router;
 };
