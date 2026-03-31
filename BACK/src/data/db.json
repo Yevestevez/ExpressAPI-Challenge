@@ -1,4 +1,17 @@
 {
-    "potatoes": [],
+    "potatoes": [
+        {
+            "id": "01",
+            "weight": 2,
+            "price": 3,
+            "color": "white"
+        },
+        {
+            "id": "02",
+            "weight": 5,
+            "price": 8,
+            "color": "black"
+        }
+    ],
     "farmers": []
 }
