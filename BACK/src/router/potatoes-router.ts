@@ -13,6 +13,7 @@ const router = (controller: PotatoesController) => {
     router.get('/:id', controller.getById);
     router.post('/', controller.create);
     router.patch('/:id', controller.updateById);
+    router.delete('/:id', controller.deleteById);
 
     return router;
 };

@@ -70,4 +70,23 @@ export class PotatoesController {
             next(finalError);
         }
     };
+
+    deleteById = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { id } = req.params;
+            this.repo.deleteById(id as string);
+            res.statusCode = 204;
+            res.statusMessage = 'No Content';
+            res.end();
+            return;
+        } catch (error) {
+            const finalError = new HttpError(
+                404,
+                'NotFound',
+                (error as Error).message,
+            );
+            finalError.cause = error;
+            next(finalError);
+        }
+    };
 }

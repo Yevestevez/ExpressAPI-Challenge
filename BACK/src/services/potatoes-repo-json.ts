@@ -59,4 +59,13 @@ export class PotatoesRepoJSON implements Repository<Potato> {
         await this.save();
         return potato;
     }
+
+    async deleteById(id: string): Promise<Potato> {
+        await this.load();
+        const index = this.#potatoes.findIndex((potato) => potato.id === id);
+        if (index === -1) throw new Error(`Patata con id ${id} no encontrada`);
+        const deletedPotato = this.#potatoes.splice(index, 1)[0] as Potato;
+        await this.save();
+        return deletedPotato;
+    }
 }
