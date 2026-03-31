@@ -8,9 +8,9 @@ export class PotatoesController {
         this.repo = repo;
     }
 
-    async getAll(_req: Request, res: Response) {
+    getAll = async (_req: Request, res: Response) => {
         const potatoes = await this.repo.read();
         res.json(potatoes);
         return;
-    }
+    };
 }
