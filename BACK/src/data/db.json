@@ -9,8 +9,7 @@
         {
             "id": "02",
             "weight": 5,
-            "price": 8,
-            "color": "black"
+            "price": 8
         }
     ],
     "farmers": []
