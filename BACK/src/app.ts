@@ -9,6 +9,7 @@ import { errorHandler } from './middleware/error-handler.ts';
 
 const log = debug('patatas:app');
 export const app = express();
+app.disable('x-powered-by');
 log('Express app created');
 
 app.use(morgan('dev'));
