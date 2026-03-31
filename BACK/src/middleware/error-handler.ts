@@ -1,6 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
+import debug from 'debug';
+
 import { HttpError } from '../errors/http-error.ts';
+
+const log = debug('patatas:error-handler');
+log('Error handler loaded');
 
 export const errorHandler = (
     err: Error,
@@ -9,6 +14,7 @@ export const errorHandler = (
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _next: NextFunction,
 ) => {
+    log(err?.message);
     res.statusCode = 500;
     res.statusMessage = 'Internal Server Error';
 

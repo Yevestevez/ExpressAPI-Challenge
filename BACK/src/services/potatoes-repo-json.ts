@@ -1,7 +1,11 @@
 import { readFile } from 'node:fs/promises';
+import debug from 'debug';
+
 import type { Potato } from '../schemas/potato.ts';
 import type { Repository } from '../types/repo.ts';
 import { configDB } from '../config/db-config.ts';
+
+const log = debug('patatas:repo:potatoes');
 
 export class PotatoesRepoJSON implements Repository<Potato> {
     #potatoes: Potato[] = [];
@@ -9,6 +13,7 @@ export class PotatoesRepoJSON implements Repository<Potato> {
     #collection: string;
 
     constructor(collection = 'potatoes') {
+        log('PotatoesRepoJSON created');
         this.#file = configDB();
         this.#collection = collection;
     }

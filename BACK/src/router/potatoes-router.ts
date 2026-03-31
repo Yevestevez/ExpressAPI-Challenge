@@ -1,9 +1,13 @@
 import { Router } from 'express';
+import debug from 'debug';
+
 import { PotatoesController } from '../controller/potatoes-controller.ts';
+
+const log = debug('patatas:router');
 
 const router = (controller: PotatoesController) => {
     const router = Router();
-    console.log('Potatoes router created');
+    log('Potatoes router created');
 
     router.get('/', controller.getAll);
 
