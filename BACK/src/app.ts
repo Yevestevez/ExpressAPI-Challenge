@@ -31,4 +31,13 @@ app.get('/', (_req, res) => {
 
 app.use('/api/potatoes', potatoesRouter(controller));
 
+app.use((_req, res) => {
+    res.statusCode = 404;
+    res.statusMessage = 'Not Found';
+    res.json({
+        message: 'Resource not found',
+    });
+    return;
+});
+
 app.use(errorHandler);
