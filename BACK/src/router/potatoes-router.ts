@@ -1,13 +1,14 @@
 import { Router, type Request, type Response } from 'express';
 import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
+import { PotatoesRepoJSON } from '../services/potatoes-repo-json.ts';
 
 const router = () => {
     const getAll = async (__req: Request, res: Response) => {
         const __dirname = resolve('.');
         const file = join(__dirname, 'src', 'data', 'db.json');
-        const fileContent = await readFile(file, { encoding: 'utf-8' });
-        const potatoes = JSON.parse(fileContent);
+        const repo = new PotatoesRepoJSON(file);
+        const potatoes = await repo.read();
 
         res.json(potatoes);
     };
