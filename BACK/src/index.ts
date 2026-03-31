@@ -13,4 +13,4 @@ log('Node Server created');
 // Extra -> listenManager & errorManager
 
 server.listen(port);
-console.log(`Node Server listening in port [${port}]`);
+log(`Node Server listening in port [${port}]`);

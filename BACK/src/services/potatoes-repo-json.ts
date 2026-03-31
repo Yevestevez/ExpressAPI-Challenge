@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import debug from 'debug';
 
 import type { Potato } from '../schemas/potato.ts';
@@ -18,15 +18,26 @@ export class PotatoesRepoJSON implements Repository<Potato> {
         this.#collection = collection;
     }
 
-    async read(): Promise<Potato[]> {
+    private async load() {
         const fileContent = await readFile(this.#file, { encoding: 'utf-8' });
         this.#potatoes = JSON.parse(fileContent)[this.#collection];
+    }
+
+    private async save() {
+        const fileContent = await readFile(this.#file, { encoding: 'utf-8' });
+        const data = JSON.parse(fileContent);
+        data[this.#collection] = this.#potatoes;
+        const content = JSON.stringify(data, null, 4);
+        await writeFile(this.#file, content, { encoding: 'utf-8' });
+    }
+
+    async read(): Promise<Potato[]> {
+        await this.load();
         return [...this.#potatoes];
     }
 
     async readById(id: string): Promise<Potato> {
-        const fileContent = await readFile(this.#file, { encoding: 'utf-8' });
-        this.#potatoes = JSON.parse(fileContent)[this.#collection];
+        await this.load();
         const potato = this.#potatoes.find((potato) => potato.id === id);
         if (!potato) {
             throw new Error(`No hay ninguna patata con ese ${id}`);
