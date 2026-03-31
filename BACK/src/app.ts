@@ -1,13 +1,24 @@
 import express from 'express';
+import debug from 'debug';
+import morgan from 'morgan';
+import cors from 'cors';
 import potatoesRouter from './router/potatoes-router.ts';
 import { PotatoesRepoJSON } from './services/potatoes-repo-json.ts';
 import { PotatoesController } from './controller/potatoes-controller.ts';
 import { errorHandler } from './middleware/error-handler.ts';
 
+const log = debug('patatas:app');
 export const app = express();
-console.log('Express app created');
+log('Express app created');
 
+app.use(morgan('dev'));
+app.use(
+    cors({
+        origin: '*',
+    }),
+);
 app.use(express.json());
+app.use(express.urlencoded());
 app.use(express.static('./public'));
 
 const repo = new PotatoesRepoJSON();
