@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import debug from 'debug';
 
-import type { Potato } from '../schemas/potato.ts';
+import type { Potato, PotatoDTO } from '../schemas/potato.ts';
 import type { Repository } from '../types/repo.ts';
 import { configDB } from '../config/db-config.ts';
 
@@ -40,8 +40,16 @@ export class PotatoesRepoJSON implements Repository<Potato> {
         await this.load();
         const potato = this.#potatoes.find((potato) => potato.id === id);
         if (!potato) {
-            throw new Error(`No hay ninguna patata con ese ${id}`);
+            throw new Error(`No hay ninguna patata con el id [${id}]`);
         }
+        return potato;
+    }
+
+    async create(potatoData: PotatoDTO): Promise<Potato> {
+        await this.load();
+        const potato: Potato = { ...potatoData, id: crypto.randomUUID() };
+        this.#potatoes.push(potato);
+        await this.save();
         return potato;
     }
 }

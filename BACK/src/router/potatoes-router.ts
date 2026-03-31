@@ -10,6 +10,8 @@ const router = (controller: PotatoesController) => {
     log('Potatoes router created');
 
     router.get('/', controller.getAll);
+    router.get('/:id', controller.getById);
+    router.post('/', controller.create);
 
     return router;
 };
