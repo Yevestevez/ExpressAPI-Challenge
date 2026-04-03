@@ -1,7 +1,7 @@
-//import { routes } from '../../router/router';
+import { routes } from '../../router/router';
 //import { Footer } from '../footer-wc/footer.wc';
 //import { Header } from '../header/header.wc';
-//import { Menu } from '../menu/menu.wc';
+import { Menu } from '../menu/menu';
 //import './app.css';
 
 export class App extends HTMLElement {
@@ -9,7 +9,7 @@ export class App extends HTMLElement {
     static render() {
         customElements.define(App.#selector, App);
         //Header.render();
-        //Menu.render(routes);
+        Menu.render(routes);
         //Footer.render();
     }
 
@@ -23,7 +23,9 @@ export class App extends HTMLElement {
 
     #setTemplate() {
         this.#template = /*html*/ `
-            <app-header></app-header>
+            <app-header>
+                <app-menu></app-menu>
+            </app-header>
             <main></main>
             <app-footer></app-footer>
         `;
