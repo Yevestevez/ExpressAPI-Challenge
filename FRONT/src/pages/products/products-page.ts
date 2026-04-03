@@ -1,5 +1,6 @@
 import type { Potato } from '../../schemas/potato';
 import { getPotatoes } from '../../core/service/products/getPotatoes';
+import { getPotatoById } from '../../core/service/products/getPotatoById';
 
 export class ProductsPage extends HTMLElement {
     static #selector = 'app-products-page';
@@ -19,6 +20,7 @@ export class ProductsPage extends HTMLElement {
 
     #template!: string;
     #potatoes: Potato[] = [];
+    #selectedPotato: Potato | null = null;
 
     constructor() {
         super();
@@ -32,6 +34,7 @@ export class ProductsPage extends HTMLElement {
                 console.log(this.#potatoes);
                 this.#setTemplate();
                 this.#setElement();
+                this.#buttonListener();
             })
             .catch((error) => {
                 console.error(error);
@@ -43,13 +46,48 @@ export class ProductsPage extends HTMLElement {
             <section>
                 <h2>Products</h2>
                 <ul>
-                    ${this.#potatoes.map((p: Potato) => `<li>${p.id}</li>`).join('')}
+                    ${this.#potatoes.map((p: Potato) => `<li><button class="potato" data-id="${p.id}">🥔${p.id}</li></button>`).join('')}
                 </ul>
+                ${this.#selectedPotato ? this.#getPotatoDetailTemplate() : ''}
             </section>
+        `;
+    }
+
+    #getPotatoDetailTemplate() {
+        if (!this.#selectedPotato) return '';
+
+        return /*html*/ `
+            <div class="potato-detail">
+                <h3>Detalles: ${this.#selectedPotato.id}</h3>
+                <p>Precio: ${this.#selectedPotato.price}</p>
+                <p>Stock: ${this.#selectedPotato.weight}</p>
+            </div>
         `;
     }
 
     #setElement() {
         this.innerHTML = this.#template;
+    }
+
+    #buttonListener() {
+        const buttons = this.querySelectorAll('.potato');
+        buttons.forEach((button) => {
+            button.addEventListener('click', (e) => this.#handlePotatoClick(e));
+        });
+    }
+
+    #handlePotatoClick(e: Event) {
+        const button = e.target as HTMLButtonElement;
+        const potatoId = button.getAttribute('data-id');
+        console.log('Patata click', potatoId);
+        if (!potatoId) {
+            throw new Error('Patata no encontrada por Id');
+        }
+        getPotatoById(potatoId).then((potatoClicked) => {
+            this.#selectedPotato = potatoClicked;
+            this.#setTemplate();
+            this.#setElement();
+            this.#buttonListener();
+        });
     }
 }
