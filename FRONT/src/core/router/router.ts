@@ -5,8 +5,28 @@ import { ProductsPage } from '../../pages/products/products-page';
 export interface Route {
     path: string;
     label: string;
-    renderComponent: () => void;
+    renderComponent: () => void | Promise<void>;
 }
+
+const renderStaticPage = async (pageName: string) => {
+    try {
+        const response = await fetch(`http://localhost:3030/${pageName}`, {
+            method: 'GET',
+            headers: {},
+        });
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}`);
+        }
+        const html = await response.text();
+
+        const main = document.querySelector('main');
+        if (main) {
+            main.innerHTML = html;
+        }
+    } catch (error) {
+        console.error(`Error cargando ${pageName}:`, error);
+    }
+};
 
 export const routes: Route[] = [
     {
@@ -24,11 +44,11 @@ export const routes: Route[] = [
     //     label: "Tareas",
     //     renderComponent: todoPage,
     // },
-    //     {
-    //         path: '/about',
-    //         label: 'Acerca de',
-    //         renderComponent: AboutPage.render,
-    //     },
+    {
+        path: '/about',
+        label: 'Acerca de',
+        renderComponent: () => renderStaticPage('about'),
+    },
 ];
 
 export const navigate = (url = '', addHistory = true) => {
