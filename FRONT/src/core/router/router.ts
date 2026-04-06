@@ -1,32 +1,12 @@
-//import { AboutPage } from "../../about/about-page";
 import { HomePage } from '../../pages/home/home-page';
 import { ProductsPage } from '../../pages/products/products-page';
+import { renderStaticPage } from '../service/getStaticPage';
 
 export interface Route {
     path: string;
     label: string;
     renderComponent: () => void | Promise<void>;
 }
-
-const renderStaticPage = async (pageName: string) => {
-    try {
-        const response = await fetch(`http://localhost:3030/${pageName}`, {
-            method: 'GET',
-            headers: {},
-        });
-        if (!response.ok) {
-            throw new Error(`Error ${response.status}`);
-        }
-        const html = await response.text();
-
-        const main = document.querySelector('main');
-        if (main) {
-            main.innerHTML = html;
-        }
-    } catch (error) {
-        console.error(`Error cargando ${pageName}:`, error);
-    }
-};
 
 export const routes: Route[] = [
     {
@@ -39,11 +19,6 @@ export const routes: Route[] = [
         label: 'Productos',
         renderComponent: ProductsPage.render,
     },
-    // {
-    //     path: "/todo",
-    //     label: "Tareas",
-    //     renderComponent: todoPage,
-    // },
     {
         path: '/about',
         label: 'Acerca de',
