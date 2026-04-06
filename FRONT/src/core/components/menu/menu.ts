@@ -46,18 +46,15 @@ export class Menu extends HTMLElement {
     }
 
     #handleDialogMenu(event: Event) {
-        console.log('Click', event);
-        const target = event.target as HTMLAnchorElement;
-        event.stopPropagation();
+        const target = event.target as HTMLElement;
+        const anchor = target.closest('a');
 
-        //const menuDialogElement = document.querySelector(
-        //'#menu-dialog',
-        // as HTMLDialogElement;
+        if (!anchor) {
+            return;
+        }
 
         event.preventDefault();
-        //menuDialogElement.close();
-        navigate(target.href);
-        // const linkHref = event.target.getAttribute("href");
-        // navigate(linkHref);
+        event.stopPropagation();
+        navigate(anchor.href);
     }
 }
