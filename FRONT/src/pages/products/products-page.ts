@@ -2,6 +2,7 @@ import type { Potato, PotatoDTO } from '../../schemas/potato';
 import { getPotatoes } from '../../core/service/products/getPotatoes';
 import { getPotatoById } from '../../core/service/products/getPotatoById';
 import { createPotato } from '../../core/service/products/createPotato';
+import { deletePotatoById } from '../../core/service/products/deletePotatoById';
 
 export class ProductsPage extends HTMLElement {
     static #selector = 'app-products-page';
@@ -38,6 +39,7 @@ export class ProductsPage extends HTMLElement {
                 this.#setElement();
                 this.#potatoButtonListener();
                 this.#createPotatoButtonListener();
+                this.#deletePotatoButtonListener();
             })
             .catch((error) => {
                 console.error(error);
@@ -55,6 +57,7 @@ export class ProductsPage extends HTMLElement {
                         .map(
                             (p: Potato) => `<li>
                             <button class="potato" data-id="${p.id}">🥔${p.id}</button>
+                            <button class="delete-potato-btn" data-id="${p.id}">❌</button>
                         </li>`,
                         )
                         .join('')}
@@ -149,6 +152,15 @@ export class ProductsPage extends HTMLElement {
         }
     }
 
+    #deletePotatoButtonListener() {
+        const deleteButtons = this.querySelectorAll('.delete-potato-btn');
+        deleteButtons.forEach((button) => {
+            button.addEventListener('click', (e) =>
+                this.#handleDeletePotatoClick(e),
+            );
+        });
+    }
+
     #handlePotatoClick(e: Event) {
         const button = e.target as HTMLButtonElement;
         const potatoId = button.getAttribute('data-id');
@@ -158,6 +170,18 @@ export class ProductsPage extends HTMLElement {
         }
         getPotatoById(potatoId).then((potatoClicked) => {
             this.#selectedPotato = potatoClicked;
+            this.#loadData();
+        });
+    }
+
+    #handleDeletePotatoClick(e: Event) {
+        const deleteButton = e.target as HTMLButtonElement;
+        const potatoId = deleteButton.getAttribute('data-id');
+        console.log('Patata click', potatoId);
+        if (!potatoId) {
+            throw new Error('Patata no encontrada por Id');
+        }
+        deletePotatoById(potatoId).then(() => {
             this.#loadData();
         });
     }
