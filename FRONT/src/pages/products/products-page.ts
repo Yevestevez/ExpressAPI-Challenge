@@ -1,6 +1,7 @@
-import type { Potato } from '../../schemas/potato';
+import type { Potato, PotatoDTO } from '../../schemas/potato';
 import { getPotatoes } from '../../core/service/products/getPotatoes';
 import { getPotatoById } from '../../core/service/products/getPotatoById';
+import { createPotato } from '../../core/service/products/createPotato';
 
 export class ProductsPage extends HTMLElement {
     static #selector = 'app-products-page';
@@ -21,6 +22,7 @@ export class ProductsPage extends HTMLElement {
     #template!: string;
     #potatoes: Potato[] = [];
     #selectedPotato: Potato | null = null;
+    #showCreateForm = false;
 
     constructor() {
         super();
@@ -34,7 +36,8 @@ export class ProductsPage extends HTMLElement {
                 console.log(this.#potatoes);
                 this.#setTemplate();
                 this.#setElement();
-                this.#buttonListener();
+                this.#potatoButtonListener();
+                this.#createPotatoButtonListener();
             })
             .catch((error) => {
                 console.error(error);
@@ -45,11 +48,72 @@ export class ProductsPage extends HTMLElement {
         this.#template = /*html*/ `
             <section>
                 <h2>Products</h2>
+                <button class="toggle-form">Plantar 🥔</button>
+                ${this.#showCreateForm ? this.#getCreateFormTemplate() : ''}
                 <ul>
-                    ${this.#potatoes.map((p: Potato) => `<li><button class="potato" data-id="${p.id}">🥔${p.id}</button></li>`).join('')}
+                    ${this.#potatoes
+                        .map(
+                            (p: Potato) => `<li>
+                            <button class="potato" data-id="${p.id}">🥔${p.id}</button>
+                        </li>`,
+                        )
+                        .join('')}
                 </ul>
                 ${this.#selectedPotato ? this.#getPotatoDetailTemplate() : ''}
             </section>
+        `;
+    }
+
+    #getCreateFormTemplate() {
+        return /*html*/ `
+            <form class="create-potato-form">
+                <fieldset>
+                    <legend>Crear Nueva Patata</legend>
+                    
+                    <div class="form-group">
+                        <label for="weight">Peso (g):</label>
+                        <input 
+                            type="number" 
+                            id="weight" 
+                            name="weight" 
+                            step="0.01"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Precio (€):</label>
+                        <input 
+                            type="number" 
+                            id="price" 
+                            name="price" 
+                            step="0.01"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="color">Color:</label>
+                        <input 
+                            type="text" 
+                            id="color" 
+                            name="color"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="owner">Propietario:</label>
+                        <input 
+                            type="text" 
+                            id="owner" 
+                            name="owner"
+                        />
+                    </div>
+
+                    <button type="submit" class="btn-submit">Plantar 🥔</button>
+                    <button type="button" class="btn-cancel">Cancelar</button>
+                </fieldset>
+            </form>
         `;
     }
 
@@ -61,6 +125,7 @@ export class ProductsPage extends HTMLElement {
                 <h3>Detalles: ${this.#selectedPotato.id}</h3>
                 <p>Precio: ${this.#selectedPotato.price}</p>
                 <p>Stock: ${this.#selectedPotato.weight}</p>
+                <button type="button" class="btn-close">Cerrar</button>
             </div>
         `;
     }
@@ -69,11 +134,19 @@ export class ProductsPage extends HTMLElement {
         this.innerHTML = this.#template;
     }
 
-    #buttonListener() {
+    #potatoButtonListener() {
         const buttons = this.querySelectorAll('.potato');
         buttons.forEach((button) => {
             button.addEventListener('click', (e) => this.#handlePotatoClick(e));
         });
+
+        const closeBtn = this.querySelector('.btn-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                this.#selectedPotato = null;
+                this.#loadData();
+            });
+        }
     }
 
     #handlePotatoClick(e: Event) {
@@ -85,9 +158,54 @@ export class ProductsPage extends HTMLElement {
         }
         getPotatoById(potatoId).then((potatoClicked) => {
             this.#selectedPotato = potatoClicked;
-            this.#setTemplate();
-            this.#setElement();
-            this.#buttonListener();
+            this.#loadData();
         });
+    }
+
+    #createPotatoButtonListener() {
+        const toggleBtn = this.querySelector('.toggle-form');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                this.#showCreateForm = !this.#showCreateForm;
+                this.#loadData();
+            });
+        }
+
+        const form = this.querySelector(
+            '.create-potato-form',
+        ) as HTMLFormElement;
+        if (form) {
+            form.addEventListener('submit', (e) => this.#handleFormSubmit(e));
+        }
+
+        const cancelBtn = this.querySelector('.btn-cancel');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                this.#showCreateForm = false;
+                this.#loadData();
+            });
+        }
+    }
+
+    #handleFormSubmit(e: Event) {
+        e.preventDefault();
+        const form = e.target as HTMLFormElement;
+        const formData = new FormData(form);
+
+        const potatoData: PotatoDTO = {
+            weight: Number(formData.get('weight')),
+            price: Number(formData.get('price')),
+            color: (formData.get('color') as string) || undefined,
+            owner: (formData.get('owner') as string) || undefined,
+        };
+
+        createPotato(potatoData)
+            .then(() => {
+                this.#showCreateForm = false;
+                this.#loadData();
+            })
+            .catch((error) => {
+                console.error('Error al crear patata:', error);
+            });
     }
 }

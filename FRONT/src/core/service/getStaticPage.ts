@@ -1,6 +1,9 @@
 export const renderStaticPage = async (pageName: string) => {
+    const API_URL = `${import.meta.env.VITE_API_URL}:${import.meta.env.VITE_API_PORT}`;
+    const URL = `${API_URL}/${pageName}`;
+
     try {
-        const response = await fetch(`http://localhost:3030/${pageName}`, {
+        const response = await fetch(URL, {
             method: 'GET',
             headers: {},
         });

@@ -1,5 +1,6 @@
 export const getPotatoById = (id: string) => {
-    const URL = `http://localhost:3030/api/potatoes/${id}`;
+    const API_URL = `${import.meta.env.VITE_API_URL}:${import.meta.env.VITE_API_PORT}`;
+    const URL = `${API_URL}/api/potatoes/${id}`;
 
     return fetch(URL, {
         method: 'GET',
