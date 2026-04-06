@@ -46,7 +46,7 @@ export class ProductsPage extends HTMLElement {
             <section>
                 <h2>Products</h2>
                 <ul>
-                    ${this.#potatoes.map((p: Potato) => `<li><button class="potato" data-id="${p.id}">🥔${p.id}</li></button>`).join('')}
+                    ${this.#potatoes.map((p: Potato) => `<li><button class="potato" data-id="${p.id}">🥔${p.id}</button></li>`).join('')}
                 </ul>
                 ${this.#selectedPotato ? this.#getPotatoDetailTemplate() : ''}
             </section>
