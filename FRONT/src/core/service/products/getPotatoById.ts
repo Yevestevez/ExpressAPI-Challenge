@@ -14,7 +14,6 @@ export const getPotatoById = (id: string) => {
             }
         })
         .then((data) => {
-            console.log(data);
             return data;
         });
 };

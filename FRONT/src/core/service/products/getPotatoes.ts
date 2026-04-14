@@ -14,7 +14,6 @@ export const getPotatoes = () => {
             }
         })
         .then((data) => {
-            console.log(data);
             return data;
         });
 };

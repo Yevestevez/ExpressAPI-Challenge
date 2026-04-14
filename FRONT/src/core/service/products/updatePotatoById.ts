@@ -1,16 +1,16 @@
-import type { Potato, PotatoDTO } from '../../../schemas/potato';
+import type { PotatoUpdateDTO } from '../../../schemas/potato';
 
-export const createPotato = (data: PotatoDTO): Promise<Potato> => {
+export const updatePotatoById = (id: string, data: PotatoUpdateDTO) => {
     const API_URL = `${import.meta.env.VITE_API_URL}:${import.meta.env.VITE_API_PORT}`;
-    const URL = `${API_URL}/api/potatoes`;
+    const URL = `${API_URL}/api/potatoes/${id}`;
 
     return fetch(URL, {
-        method: 'POST',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
     })
         .then((response) => {
-            if (response.status === 201) {
+            if (response.ok) {
                 return response.json();
             } else {
                 throw new Error(response.status + ' ' + response.statusText);
