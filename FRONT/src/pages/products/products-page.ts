@@ -1,8 +1,9 @@
-import type { Potato, PotatoDTO } from '../../schemas/potato';
+import type { Potato, PotatoDTO, PotatoUpdateDTO } from '../../schemas/potato';
 import { getPotatoes } from '../../core/service/products/getPotatoes';
 import { getPotatoById } from '../../core/service/products/getPotatoById';
 import { createPotato } from '../../core/service/products/createPotato';
 import { deletePotatoById } from '../../core/service/products/deletePotatoById';
+import { updatePotatoById } from '../../core/service/products/updatePotatoById';
 
 export class ProductsPage extends HTMLElement {
     static #selector = 'app-products-page';
@@ -24,6 +25,8 @@ export class ProductsPage extends HTMLElement {
     #potatoes: Potato[] = [];
     #selectedPotato: Potato | null = null;
     #showCreateForm = false;
+    #showUpdateForm = false;
+    #selectedPotatoIdForUpdate: string | null = null;
 
     constructor() {
         super();
@@ -34,12 +37,12 @@ export class ProductsPage extends HTMLElement {
         getPotatoes()
             .then((potatoes) => {
                 this.#potatoes = potatoes;
-                console.log(this.#potatoes);
                 this.#setTemplate();
                 this.#setElement();
                 this.#potatoButtonListener();
                 this.#createPotatoButtonListener();
                 this.#deletePotatoButtonListener();
+                this.#updatePotatoButtonListener();
             })
             .catch((error) => {
                 console.error(error);
@@ -51,17 +54,21 @@ export class ProductsPage extends HTMLElement {
             <section>
                 <h2>Products</h2>
                 <button class="toggle-form">Plantar 🥔</button>
+                
                 ${this.#showCreateForm ? this.#getCreateFormTemplate() : ''}
+                
                 <ul>
                     ${this.#potatoes
                         .map(
                             (p: Potato) => `<li>
                             <button class="potato" data-id="${p.id}">🥔${p.id}</button>
                             <button class="delete-potato-btn" data-id="${p.id}">❌</button>
+                            <button class="toggle-update-form" data-id="${p.id}">Actualizar 🥔</button>
                         </li>`,
                         )
                         .join('')}
                 </ul>
+                ${this.#showUpdateForm ? this.#getUpdateFormTemplate() : ''}
                 ${this.#selectedPotato ? this.#getPotatoDetailTemplate() : ''}
             </section>
         `;
@@ -79,7 +86,7 @@ export class ProductsPage extends HTMLElement {
                             type="number" 
                             id="weight" 
                             name="weight" 
-                            step="0.01"
+                            step="0.5"
                             required
                         />
                     </div>
@@ -90,7 +97,7 @@ export class ProductsPage extends HTMLElement {
                             type="number" 
                             id="price" 
                             name="price" 
-                            step="0.01"
+                            step="0.5"
                             required
                         />
                     </div>
@@ -120,14 +127,67 @@ export class ProductsPage extends HTMLElement {
         `;
     }
 
+    #getUpdateFormTemplate() {
+        return /*html*/ `
+            <form class="update-potato-form">
+                <fieldset>
+                    <legend>Actualizar Patata</legend>
+                    
+                    <div class="form-group">
+                        <label for="weight">Peso (g):</label>
+                        <input 
+                            type="number" 
+                            id="weight" 
+                            name="weight" 
+                            step="0.5"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Precio (€):</label>
+                        <input 
+                            type="number" 
+                            id="price" 
+                            name="price" 
+                            step="0.5"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="color">Color:</label>
+                        <input 
+                            type="text" 
+                            id="color" 
+                            name="color"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="owner">Propietario:</label>
+                        <input 
+                            type="text" 
+                            id="owner" 
+                            name="owner"
+                        />
+                    </div>
+
+                    <button type="submit" class="btn-submit">Actualizar 🥔</button>
+                    <button type="button" class="btn-cancel">Cancelar</button>
+                </fieldset>
+            </form>
+        `;
+    }
+
     #getPotatoDetailTemplate() {
         if (!this.#selectedPotato) return '';
 
         return /*html*/ `
             <div class="potato-detail">
                 <h3>Detalles: ${this.#selectedPotato.id}</h3>
+                <p>Peso: ${this.#selectedPotato.weight}</p>
                 <p>Precio: ${this.#selectedPotato.price}</p>
-                <p>Stock: ${this.#selectedPotato.weight}</p>
+                ${this.#selectedPotato.color ? `<p>Color: ${this.#selectedPotato.color}</p>` : ''}
+                ${this.#selectedPotato.owner ? `<p>Propietario: ${this.#selectedPotato.owner}</p>` : ''}
                 <button type="button" class="btn-close">Cerrar</button>
             </div>
         `;
@@ -137,54 +197,7 @@ export class ProductsPage extends HTMLElement {
         this.innerHTML = this.#template;
     }
 
-    #potatoButtonListener() {
-        const buttons = this.querySelectorAll('.potato');
-        buttons.forEach((button) => {
-            button.addEventListener('click', (e) => this.#handlePotatoClick(e));
-        });
-
-        const closeBtn = this.querySelector('.btn-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                this.#selectedPotato = null;
-                this.#loadData();
-            });
-        }
-    }
-
-    #deletePotatoButtonListener() {
-        const deleteButtons = this.querySelectorAll('.delete-potato-btn');
-        deleteButtons.forEach((button) => {
-            button.addEventListener('click', (e) =>
-                this.#handleDeletePotatoClick(e),
-            );
-        });
-    }
-
-    #handlePotatoClick(e: Event) {
-        const button = e.target as HTMLButtonElement;
-        const potatoId = button.getAttribute('data-id');
-        console.log('Patata click', potatoId);
-        if (!potatoId) {
-            throw new Error('Patata no encontrada por Id');
-        }
-        getPotatoById(potatoId).then((potatoClicked) => {
-            this.#selectedPotato = potatoClicked;
-            this.#loadData();
-        });
-    }
-
-    #handleDeletePotatoClick(e: Event) {
-        const deleteButton = e.target as HTMLButtonElement;
-        const potatoId = deleteButton.getAttribute('data-id');
-        console.log('Patata click', potatoId);
-        if (!potatoId) {
-            throw new Error('Patata no encontrada por Id');
-        }
-        deletePotatoById(potatoId).then(() => {
-            this.#loadData();
-        });
-    }
+    // Listeners
 
     #createPotatoButtonListener() {
         const toggleBtn = this.querySelector('.toggle-form');
@@ -211,6 +224,105 @@ export class ProductsPage extends HTMLElement {
         }
     }
 
+    #potatoButtonListener() {
+        const buttons = this.querySelectorAll('.potato');
+        buttons.forEach((button) => {
+            button.addEventListener('click', (e) => this.#handlePotatoClick(e));
+        });
+
+        const closeBtn = this.querySelector('.btn-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                this.#selectedPotato = null;
+                this.#loadData();
+            });
+        }
+    }
+
+    #deletePotatoButtonListener() {
+        const deleteButtons = this.querySelectorAll('.delete-potato-btn');
+        deleteButtons.forEach((button) => {
+            button.addEventListener('click', (e) =>
+                this.#handleDeletePotatoClick(e),
+            );
+        });
+    }
+
+    #updatePotatoButtonListener() {
+        const updateToggleBtn = this.querySelectorAll('.toggle-update-form');
+
+        if (updateToggleBtn) {
+            updateToggleBtn.forEach((button) => {
+                button.addEventListener('click', (e) => {
+                    const updateButton = e.target as HTMLButtonElement;
+                    this.#selectedPotatoIdForUpdate = updateButton.getAttribute(
+                        'data-id',
+                    ) as string;
+
+                    if (!this.#selectedPotatoIdForUpdate) {
+                        throw new Error('Patata no encontrada por Id');
+                    }
+
+                    this.#showUpdateForm = !this.#showUpdateForm;
+                    this.#loadData();
+                });
+            });
+        }
+
+        const form = this.querySelector(
+            '.update-potato-form',
+        ) as HTMLFormElement;
+
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                this.#handleUpdateFormSubmit(
+                    this.#selectedPotatoIdForUpdate as string,
+                    e,
+                );
+            });
+        }
+
+        const cancelBtn = this.querySelector('.btn-cancel');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                this.#showUpdateForm = false;
+                this.#loadData();
+            });
+        }
+    }
+
+    // Handlers
+
+    #handlePotatoClick(e: Event) {
+        const button = e.target as HTMLButtonElement;
+        const potatoId = button.getAttribute('data-id');
+
+        if (!potatoId) {
+            throw new Error('Patata no encontrada por Id');
+        }
+
+        getPotatoById(potatoId).then((potatoClicked) => {
+            this.#selectedPotato =
+                this.#selectedPotato?.id === potatoClicked.id
+                    ? null
+                    : potatoClicked;
+            this.#loadData();
+        });
+    }
+
+    #handleDeletePotatoClick(e: Event) {
+        const deleteButton = e.target as HTMLButtonElement;
+        const potatoId = deleteButton.getAttribute('data-id');
+
+        if (!potatoId) {
+            throw new Error('Patata no encontrada por Id');
+        }
+
+        deletePotatoById(potatoId).then(() => {
+            this.#loadData();
+        });
+    }
+
     #handleFormSubmit(e: Event) {
         e.preventDefault();
         const form = e.target as HTMLFormElement;
@@ -224,6 +336,29 @@ export class ProductsPage extends HTMLElement {
         };
 
         createPotato(potatoData)
+            .then(() => {
+                this.#showCreateForm = false;
+                this.#loadData();
+            })
+            .catch((error) => {
+                console.error('Error al crear patata:', error);
+            });
+    }
+
+    #handleUpdateFormSubmit(potatoId: string, e: Event) {
+        e.preventDefault();
+
+        const form = e.target as HTMLFormElement;
+        const formData = new FormData(form);
+
+        const potatoData: PotatoUpdateDTO = {
+            weight: Number(formData.get('weight')),
+            price: Number(formData.get('price')),
+            color: (formData.get('color') as string) || undefined,
+            owner: (formData.get('owner') as string) || undefined,
+        };
+
+        updatePotatoById(potatoId, potatoData)
             .then(() => {
                 this.#showCreateForm = false;
                 this.#loadData();
