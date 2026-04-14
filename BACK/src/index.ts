@@ -12,6 +12,24 @@ const server = createServer(app);
 log('Node Server created');
 
 // Extra -> listenManager & errorManager
+const listenManager = () => {
+    const addr = server.address();
+    if (addr === null) return;
+    let bind;
+    if (typeof addr === 'string') {
+        bind = 'pipe ' + addr;
+    } else {
+        bind =
+            addr.address === '::'
+                ? `http://localhost:${addr?.port}`
+                : `${addr.address}:${addr?.port}`;
+    }
+    if (env.NODE_ENV !== 'dev') {
+        console.log(`Server listening on ${bind}`);
+    } else {
+        log(`Servidor escuchando en ${bind}`);
+    }
+};
 
 const errorManager = (error: HttpError, res: ServerResponse) => {
     if (!('statusCode' in error)) {
@@ -28,6 +46,6 @@ const errorManager = (error: HttpError, res: ServerResponse) => {
     res.end(errorInfo);
 };
 
+server.on('listening', listenManager);
 server.on('error', errorManager);
 server.listen(port);
-log(`Node Server listening in port [${port}]`);
